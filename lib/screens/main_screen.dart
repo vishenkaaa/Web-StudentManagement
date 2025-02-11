@@ -16,12 +16,20 @@ class MainScreen extends StatelessWidget {
       ),
       backgroundColor: AppColors.lightBlue,
       body: Padding(
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SettingsPanel(),
-            SizedBox(height: 16)
+            SizedBox(height: 16),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(child: StudentList()),
+                  SizedBox(width: 16),
+                ],
+              ),
+            ),
           ],
         ),
       ),

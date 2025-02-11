@@ -9,7 +9,7 @@ class SettingsPanel extends StatelessWidget {
     var isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.02),
+      padding: EdgeInsets.all(screenWidth * 0.01),
       decoration: BoxDecoration(
         color: AppColors.white2,
         borderRadius: BorderRadius.circular(15),
@@ -72,18 +72,16 @@ class SettingsPanel extends StatelessWidget {
   Widget _buildSettingItem(IconData icon, String title, String value, double screenWidth) {
     // Встановлення мінімальних розмірів для шрифтів та іконок
     double iconSize = screenWidth * 0.021;
-    iconSize = iconSize < 24 ? 24 : iconSize; // Мінімальний розмір іконки — 24
-    double fontSize = screenWidth * 0.014;
-    fontSize = fontSize < 14 ? 14 : fontSize; // Мінімальний розмір тексту — 14
+    iconSize = iconSize < 22 ? 22 : iconSize; // Мінімальний розмір іконки — 24
 
     return Column(
       children: [
         Icon(icon, size: iconSize, color: AppColors.moonstone),
-        SizedBox(height: 8),
-        Text(title, style: AppTextStyles.h2.copyWith(fontSize: fontSize)),
+        SizedBox(height: 6),
+        Text(title, style: AppTextStyles.h2),
         Text(
           value,
-          style: AppTextStyles.h2.copyWith(fontSize: fontSize, color: Colors.yellow[800]),
+          style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
         ),
       ],
     );
