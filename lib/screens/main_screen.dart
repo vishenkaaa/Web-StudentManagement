@@ -27,6 +27,7 @@ class MainScreen extends StatelessWidget {
                 children: [
                   Expanded(child: StudentList()),
                   SizedBox(width: 16),
+                  Expanded(child: TeacherList()),
                 ],
               ),
             ),

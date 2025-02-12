@@ -30,8 +30,45 @@ class _StudentListState extends State<StudentList> {
     setState(() {
       String newStudent = "$className клас - $name - $email";
       students.add(newStudent);
-      _filterStudents(_searchController.text); // Оновити фільтрований список
+      _filterStudents(_searchController.text);
     });
+  }
+
+  void _showDeleteStudentDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Ви впевнені, що хочете видалити цього учня?"),
+          backgroundColor: AppColors.white,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Скасувати"),
+              style: TextButton.styleFrom(
+                  foregroundColor: Colors.lightBlueAccent,
+                  textStyle: AppTextStyles.h3
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  filteredStudents.removeAt(index);
+                  students.removeAt(index);
+                });
+                Navigator.pop(context);
+              },
+              child: Text("Видалити"),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  textStyle: AppTextStyles.h3
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget buildTextField({
@@ -40,6 +77,8 @@ class _StudentListState extends State<StudentList> {
     required String hint,
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return TextField(
       controller: controller,
@@ -65,6 +104,8 @@ class _StudentListState extends State<StudentList> {
           borderSide: BorderSide(color: AppColors.moonstone, width: 2),
         ),
       ),
+      readOnly: readOnly,
+      onTap: onTap,
     );
   }
 
@@ -81,6 +122,7 @@ class _StudentListState extends State<StudentList> {
       builder: (context) {
         return AlertDialog(
           title: Text("Додати учня"),
+          backgroundColor: AppColors.white,
           content: Container(
             width: MediaQuery.of(context).size.width * 0.4,
             child: Column(
@@ -112,7 +154,8 @@ class _StudentListState extends State<StudentList> {
                   label: "Дата народження",
                   hint: "01.01.1999",
                   icon: Icons.cake,
-                  keyboardType: TextInputType.datetime,
+                  readOnly: true, // Робимо поле тільки для читання
+                  onTap: () => _showDatePicker(dateOfBirthController),
                 ),
                 SizedBox(height: 12),
                 buildTextField(
@@ -160,6 +203,35 @@ class _StudentListState extends State<StudentList> {
         );
       },
     );
+  }
+
+  Future<void> _showDatePicker(TextEditingController controller) async {
+    final DateTime initialDate = DateTime.now();
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.carribbeanCurrent,
+              onPrimary: Colors.white,
+              surface: AppColors.white,
+            ),
+            dialogBackgroundColor: AppColors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      String formattedDate = "${picked.day.toString().padLeft(2, '0')}.${picked.month.toString().padLeft(2, '0')}.${picked.year}";
+      controller.text = formattedDate;
+    }
   }
 
   @override
@@ -231,7 +303,15 @@ class _StudentListState extends State<StudentList> {
                     return ListTile(
                       leading: Icon(Icons.person, color: AppColors.moonstone),
                       title: Text(filteredStudents[index]),
-                      trailing: Icon(Icons.delete, color: Colors.red),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _showDeleteStudentDialog(index),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),

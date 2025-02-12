@@ -2,25 +2,85 @@ import 'package:flutter/material.dart';
 import '../styles/colors.dart';
 import '../styles/fonts.dart';
 
-class SettingsPanel extends StatelessWidget {
+class SettingsPanel extends StatefulWidget {
+  @override
+  _SettingsPanelState createState() => _SettingsPanelState();
+}
+
+class _SettingsPanelState extends State<SettingsPanel> {
+  bool isEditing = false;
+  Map<String, String> settings = {
+    "Початок уроків о": "08:00",
+    "Велика перерва після уроку №": "3",
+    "Тривалість великої перерви": "30",
+    "Тривалість звичайної перерви": "10",
+  };
+  Map<String, String> tempSettings = {};
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.01),
+        padding: EdgeInsets.fromLTRB(
+            screenWidth * 0.01,
+            0,
+            screenWidth * 0.01,
+            screenWidth * 0.01
+        ),
       decoration: BoxDecoration(
         color: AppColors.white2,
         borderRadius: BorderRadius.circular(15),
       ),
-      child: isLandscape
-          ? _buildWideLayout(screenWidth)
-          : screenWidth > 900
-          ? _buildWideLayout(screenWidth)
-          : screenWidth > 600
-          ? _buildMediumLayout(screenWidth)
-          : _buildNarrowLayout(screenWidth),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if(!isEditing)
+                IconButton(
+                  icon: Icon(size: 18, Icons.edit, color: Colors.grey),
+                  onPressed: (){
+                    setState(() {
+                      isEditing = true;
+                      tempSettings = Map.from(settings);
+                    });
+                  },
+                )
+              else
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.check, color: Colors.green),
+                      onPressed: () {
+                        setState(() {
+                          settings = Map.from(tempSettings);
+                          isEditing = false;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          isEditing = false;
+                        });
+                      },
+                    ),
+                  ],
+                )
+            ],
+          ),
+          isLandscape
+              ? _buildWideLayout(screenWidth)
+              : screenWidth > 900
+              ? _buildWideLayout(screenWidth)
+              : screenWidth > 600
+              ? _buildMediumLayout(screenWidth)
+              : _buildNarrowLayout(screenWidth),
+        ],
+      )
     );
   }
 
@@ -28,10 +88,10 @@ class SettingsPanel extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildSettingItem(Icons.schedule, "Початок уроків о", "08:00", screenWidth),
-        _buildSettingItem(Icons.cast_for_education, "Велика перерва після уроку №", "3", screenWidth),
-        _buildSettingItem(Icons.emoji_food_beverage, "Тривалість великої перерви", "30 хв", screenWidth),
-        _buildSettingItem(Icons.smoking_rooms, "Тривалість звичайної перерви", "10 хв", screenWidth),
+        _buildSettingItem(Icons.schedule, "Початок уроків о", "08:00",false,  screenWidth),
+        _buildSettingItem(Icons.cast_for_education, "Велика перерва після уроку №", "3",false, screenWidth),
+        _buildSettingItem(Icons.emoji_food_beverage, "Тривалість великої перерви", "30",true, screenWidth),
+        _buildSettingItem(Icons.smoking_rooms, "Тривалість звичайної перерви", "10", true, screenWidth),
       ],
     );
   }
@@ -42,16 +102,16 @@ class SettingsPanel extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildSettingItem(Icons.schedule, "Початок уроків о", "08:00", screenWidth),
-            _buildSettingItem(Icons.cast_for_education, "Велика перерва після уроку №", "3", screenWidth),
+            _buildSettingItem(Icons.schedule, "Початок уроків о", "08:00", false, screenWidth),
+            _buildSettingItem(Icons.cast_for_education, "Велика перерва після уроку №", "3", false, screenWidth),
           ],
         ),
         SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildSettingItem(Icons.emoji_food_beverage, "Тривалість великої перерви", "30 хв", screenWidth),
-            _buildSettingItem(Icons.smoking_rooms, "Тривалість звичайної перерви", "10 хв", screenWidth),
+            _buildSettingItem(Icons.emoji_food_beverage, "Тривалість великої перерви", "30",  true, screenWidth),
+            _buildSettingItem(Icons.smoking_rooms, "Тривалість звичайної перерви", "10", true, screenWidth),
           ],
         ),
       ],
@@ -61,28 +121,112 @@ class SettingsPanel extends StatelessWidget {
   Widget _buildNarrowLayout(double screenWidth) {
     return Column(
       children: [
-        _buildSettingItem(Icons.schedule, "Початок уроків о", "08:00", screenWidth),
-        _buildSettingItem(Icons.cast_for_education, "Велика перерва після уроку №", "3", screenWidth),
-        _buildSettingItem(Icons.emoji_food_beverage, "Тривалість великої перерви", "30 хв", screenWidth),
-        _buildSettingItem(Icons.smoking_rooms, "Тривалість звичайної перерви", "10 хв", screenWidth),
+        _buildSettingItem(Icons.schedule, "Початок уроків о", "08:00", false, screenWidth),
+        _buildSettingItem(Icons.cast_for_education, "Велика перерва після уроку №", "3", false, screenWidth),
+        _buildSettingItem(Icons.emoji_food_beverage, "Тривалість великої перерви", "30", true, screenWidth),
+        _buildSettingItem(Icons.smoking_rooms, "Тривалість звичайної перерви", "10", true, screenWidth),
       ],
     );
   }
 
-  Widget _buildSettingItem(IconData icon, String title, String value, double screenWidth) {
-    // Встановлення мінімальних розмірів для шрифтів та іконок
+  Widget _buildSettingItem(IconData icon, String title, String value, bool isMinutes, double screenWidth) {
     double iconSize = screenWidth * 0.021;
-    iconSize = iconSize < 22 ? 22 : iconSize; // Мінімальний розмір іконки — 24
+    iconSize = iconSize < 22 ? 22 : iconSize;
+
+    Future<void> _showTimePicker(BuildContext context) async {
+      final TimeOfDay initialTime = TimeOfDay(
+        hour: int.parse(tempSettings[title]!.split(':')[0]),
+        minute: int.parse(tempSettings[title]!.split(':')[1]),
+      );
+
+      final TimeOfDay? picked = await showTimePicker(
+        context: context,
+        initialTime: initialTime,
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              timePickerTheme: TimePickerThemeData(
+                backgroundColor: AppColors.white,
+                hourMinuteTextColor: AppColors.carribbeanCurrent,
+                dialHandColor: AppColors.carribbeanCurrent,
+                dialBackgroundColor: AppColors.lightBlue,
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (picked != null) {
+        setState(() {
+          tempSettings[title] = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+        });
+      }
+    }
 
     return Column(
       children: [
         Icon(icon, size: iconSize, color: AppColors.moonstone),
         SizedBox(height: 6),
         Text(title, style: AppTextStyles.h2),
-        Text(
-          value,
-          style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
-        ),
+        if (isEditing)
+          Container(
+            width: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (title == "Початок уроків о")
+                  InkWell(
+                    onTap: () => _showTimePicker(context),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.carribbeanCurrent),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        tempSettings[title]!,
+                        style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
+                      ),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: TextField(
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                      controller: TextEditingController(text: tempSettings[title]),
+                      onChanged: (value) {
+                        tempSettings[title] = value;
+                      },
+                    ),
+                  ),
+                if (isMinutes)
+                  Text(
+                    " хв",
+                    style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
+                  ),
+              ],
+            ),
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                settings[title]!,
+                style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
+              ),
+              if (isMinutes)
+                Text(
+                  " хв",
+                  style: AppTextStyles.h2.copyWith(color: Colors.yellow[800]),
+                ),
+            ],
+          ),
       ],
     );
   }
