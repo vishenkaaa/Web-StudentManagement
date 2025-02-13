@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:student_management_app/styles/fonts.dart';
+import '../screens/student_screen.dart';
 import '../styles/colors.dart';
 
 class StudentList extends StatefulWidget {
@@ -312,6 +313,16 @@ class _StudentListState extends State<StudentList> {
                           ),
                         ],
                       ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StudentScreen(
+                              studentName: filteredStudents[index],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

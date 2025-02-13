@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/config_service.dart';
 import '../styles/colors.dart';
 import '../styles/fonts.dart';
 
@@ -9,6 +10,9 @@ class SettingsPanel extends StatefulWidget {
 
 class _SettingsPanelState extends State<SettingsPanel> {
   bool isEditing = false;
+  bool isLoading = true;
+  String? error;
+
   Map<String, String> settings = {
     "Початок уроків о": "08:00",
     "Велика перерва після уроку №": "3",
@@ -18,9 +22,96 @@ class _SettingsPanelState extends State<SettingsPanel> {
   Map<String, String> tempSettings = {};
 
   @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
+      final response = await ConfigService.getSettings();
+
+      setState(() {
+        settings = {
+          "Початок уроків о": response['lessonStartTime'] ?? "08:00",
+          "Велика перерва після уроку №": response['bigBreakAfter']?.toString() ?? "3",
+          "Тривалість великої перерви": response['bigBreakDuration']?.toString() ?? "30",
+          "Тривалість звичайної перерви": response['smallBreakDuration']?.toString() ?? "10",
+        };
+        tempSettings = Map.from(settings);
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      setState(() {
+        error = null;
+      });
+
+      await ConfigService.updateSettings({
+        'lessonStartTime': tempSettings["Початок уроків о"],
+        'bigBreakAfter': int.parse(tempSettings["Велика перерва після уроку №"] ?? "3"),
+        'bigBreakDuration': int.parse(tempSettings["Тривалість великої перерви"] ?? "30"),
+        'smallBreakDuration': int.parse(tempSettings["Тривалість звичайної перерви"] ?? "10"),
+      });
+
+      setState(() {
+        settings = Map.from(tempSettings);
+        isEditing = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Налаштування успішно збережено')),
+      );
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Помилка при збереженні налаштувань'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Помилка: $error', style: TextStyle(color: Colors.red)),
+            ElevatedButton(
+              onPressed: _loadSettings,
+              child: Text('Спробувати знову'),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
         padding: EdgeInsets.fromLTRB(
@@ -34,9 +125,10 @@ class _SettingsPanelState extends State<SettingsPanel> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Stack(
+            alignment: Alignment.center,
             children: [
               if(!isEditing)
                 IconButton(
@@ -53,12 +145,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   children: [
                     IconButton(
                       icon: Icon(Icons.check, color: Colors.green),
-                      onPressed: () {
-                        setState(() {
-                          settings = Map.from(tempSettings);
-                          isEditing = false;
-                        });
-                      },
+                      onPressed: _saveSettings,
                     ),
                     IconButton(
                       icon: Icon(Icons.close, color: Colors.red),

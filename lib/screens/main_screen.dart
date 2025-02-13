@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../widgets/settings_panel.dart';
 import '../widgets/student_list.dart';
 import '../widgets/teacher_list.dart';
-import '../widgets/search_field.dart';
 import '../styles/colors.dart';
 import '../styles/fonts.dart';
 
