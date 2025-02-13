@@ -5,9 +5,9 @@ import '../styles/fonts.dart';
 import '../widgets/schedule_table.dart';
 
 class StudentScreen extends StatelessWidget {
-  final String studentName;
+  final String studentId;
 
-  const StudentScreen({Key? key, required this.studentName}) : super(key: key);
+  const StudentScreen({Key? key, required this.studentId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

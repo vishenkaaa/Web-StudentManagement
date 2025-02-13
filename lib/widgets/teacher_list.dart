@@ -28,14 +28,12 @@ class _TeacherListState extends State<TeacherList>{
       });
 
       final response = await TeacherService.getAllTeachers();
-      print("Teachers response: $response");
 
       setState(() {
         this.teachers = response;
         isLoading = false;
       });
     } catch (e) {
-      print("Error loading teachers: $e");
       setState(() {
         error = e.toString();
         isLoading = false;
@@ -172,10 +170,17 @@ class _TeacherListState extends State<TeacherList>{
             ),
             ElevatedButton(
               onPressed: () {
-                if (surnameController.text.isNotEmpty && nameController.text.isNotEmpty && fatherNameController.text.isNotEmpty) {
-                  _addTeacher(surnameController.text, nameController.text, fatherNameController.text);
-                  Navigator.pop(context);
+                if (nameController.text.isEmpty ||
+                    surnameController.text.isEmpty ||
+                    fatherNameController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Будь ласка, заповніть всі поля"))
+                  );
+                  return;
                 }
+
+                _addTeacher(surnameController.text, nameController.text, fatherNameController.text);
+                Navigator.pop(context);
               },
               child: Text("Додати"),
               style: ElevatedButton.styleFrom(
@@ -305,7 +310,6 @@ class _TeacherListState extends State<TeacherList>{
 
   @override
   Widget build(BuildContext context) {
-    // Додайте індикатор завантаження
     if (isLoading) {
       return Center(child: CircularProgressIndicator());
     }

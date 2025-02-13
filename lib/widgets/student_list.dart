@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:student_management_app/services/student_service.dart';
 import 'package:student_management_app/styles/fonts.dart';
+import '../models/student_model.dart';
 import '../screens/student_screen.dart';
 import '../styles/colors.dart';
 
@@ -10,29 +12,83 @@ class StudentList extends StatefulWidget {
 
 class _StudentListState extends State<StudentList> {
   TextEditingController _searchController = TextEditingController();
-  List<String> students = List.generate(10, (index) => "$index клас - Учень $index - email$index@gmail.com");
-  List<String> filteredStudents = [];
+  List<Student> students = [];
+  List<Student> filteredStudents = [];
+  bool isLoading = true;
+  String? error;
 
   @override
   void initState() {
     super.initState();
-    filteredStudents = List.from(students);
+    _loadStudents();
+  }
+
+  Future<void> _loadStudents() async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
+      final response = await StudentService.getAllStudents();
+      print("Student response: $response");
+
+      setState(() {
+        students = response;
+        filteredStudents = response;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading teachers: $e");
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
   }
 
   void _filterStudents(String query) {
     setState(() {
-      filteredStudents = students
-          .where((student) => student.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      filteredStudents = students.where((student) =>
+      student.surname.toLowerCase().contains(query.toLowerCase()) ||
+          student.name.toLowerCase().contains(query.toLowerCase()) ||
+          student.className.toLowerCase().contains(query.toLowerCase()) ||
+          student.email.toLowerCase().contains(query.toLowerCase())
+      ).toList();
     });
   }
 
-  void _addStudent(String className, String name, String email) {
-    setState(() {
-      String newStudent = "$className клас - $name - $email";
-      students.add(newStudent);
-      _filterStudents(_searchController.text);
-    });
+  Future<void> _addStudent(String email, String password, String surname,
+      String name, String className, DateTime dateOfBirth) async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
+      await StudentService.addStudent(
+          email,
+          password,
+          surname,
+          name,
+          className,
+          dateOfBirth
+      );
+
+      await _loadStudents();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Учня успішно додано')),
+      );
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Помилка додавання учня: ${e.toString()}')),
+      );
+    }
   }
 
   void _showDeleteStudentDialog(int index) {
@@ -52,12 +108,23 @@ class _StudentListState extends State<StudentList> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  filteredStudents.removeAt(index);
-                  students.removeAt(index);
-                });
-                Navigator.pop(context);
+              onPressed: () async {
+                try {
+                  final student = filteredStudents[index];
+                  print("Видаляю студента з ID: ${student.id}");
+                  await StudentService.deleteStudent(student.id);
+                  await _loadStudents();
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Учня успішно видалено')),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Помилка видалення: ${e.toString()}')),
+                  );
+                  print("Помилка видалення: $e");
+                }
               },
               child: Text("Видалити"),
               style: ElevatedButton.styleFrom(
@@ -117,6 +184,7 @@ class _StudentListState extends State<StudentList> {
     TextEditingController passwordController = TextEditingController();
     TextEditingController classController = TextEditingController();
     TextEditingController dateOfBirthController = TextEditingController();
+    DateTime? selectedDate;
 
     showDialog(
       context: context,
@@ -155,8 +223,14 @@ class _StudentListState extends State<StudentList> {
                   label: "Дата народження",
                   hint: "01.01.1999",
                   icon: Icons.cake,
-                  readOnly: true, // Робимо поле тільки для читання
-                  onTap: () => _showDatePicker(dateOfBirthController),
+                  readOnly: true,
+                  onTap: () async {
+                    final date = await _showDatePicker(dateOfBirthController);
+                    if (date != null) {
+                      selectedDate = date;
+                      dateOfBirthController.text = "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
+                    }
+                  },
                 ),
                 SizedBox(height: 12),
                 buildTextField(
@@ -188,10 +262,26 @@ class _StudentListState extends State<StudentList> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (classController.text.isNotEmpty && nameController.text.isNotEmpty && emailController.text.isNotEmpty) {
-                  _addStudent(classController.text, nameController.text, emailController.text);
-                  Navigator.pop(context);
+                if (classController.text.isEmpty ||
+                    nameController.text.isEmpty ||
+                    surnameController.text.isEmpty ||
+                    emailController.text.isEmpty ||
+                    passwordController.text.isEmpty ||
+                    selectedDate == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Будь ласка, заповніть всі поля"))
+                  );
+                  return;
                 }
+
+                if (!_isValidEmail(emailController.text)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Невірний формат email"))
+                  );
+                  return;
+                }
+                _addStudent(emailController.text, passwordController.text, classController.text, nameController.text, classController.text, selectedDate!);
+                Navigator.pop(context);
               },
               child: Text("Додати"),
               style: ElevatedButton.styleFrom(
@@ -206,7 +296,14 @@ class _StudentListState extends State<StudentList> {
     );
   }
 
-  Future<void> _showDatePicker(TextEditingController controller) async {
+  bool _isValidEmail(String email) {
+    final RegExp emailRegex = RegExp(
+        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+  Future<DateTime?> _showDatePicker(TextEditingController controller) async {
     final DateTime initialDate = DateTime.now();
 
     final DateTime? picked = await showDatePicker(
@@ -233,10 +330,16 @@ class _StudentListState extends State<StudentList> {
       String formattedDate = "${picked.day.toString().padLeft(2, '0')}.${picked.month.toString().padLeft(2, '0')}.${picked.year}";
       controller.text = formattedDate;
     }
+
+    return picked;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -298,12 +401,14 @@ class _StudentListState extends State<StudentList> {
           child: Column(
             children: [
               Expanded(
-                child: ListView.builder(
+              child: students.isEmpty
+              ? Center(child: Text('Немає учнів'))
+              : ListView.builder(
                   itemCount: filteredStudents.length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       leading: Icon(Icons.person, color: AppColors.moonstone),
-                      title: Text(filteredStudents[index]),
+                      title: Text("${students[index].surname} ${students[index].name} - ${students[index].className} - ${students[index].email}"),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -318,7 +423,7 @@ class _StudentListState extends State<StudentList> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => StudentScreen(
-                              studentName: filteredStudents[index],
+                              studentId: filteredStudents[index].id,
                             ),
                           ),
                         );
