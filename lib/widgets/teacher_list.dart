@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:student_management_app/models/teacher_model.dart';
+import 'package:student_management_app/services/teacher_service.dart';
 import 'package:student_management_app/styles/fonts.dart';
 import '../styles/colors.dart';
 
@@ -8,20 +10,82 @@ class TeacherList extends StatefulWidget{
 }
 
 class _TeacherListState extends State<TeacherList>{
-  List<String> teachers = List.generate(10, (index) => "$index $index $index");
+  List<Teacher> teachers = [];
+  bool isLoading = true;
+  String? error;
 
-  void _addTeacher(String surname, String name, String fatherName) {
-    setState(() {
-      String newTeacher = "$surname $name $fatherName";
-      teachers.add(newTeacher);
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadTeachers();
   }
 
-  void _editTeacher(int index, String surname, String name, String fatherName) {
-    setState(() {
-      String updatedTeacher = "$surname $name $fatherName";
-      teachers[index] = updatedTeacher;
-    });
+  Future<void> _loadTeachers() async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
+      final response = await TeacherService.getAllTeachers();
+      print("Teachers response: $response");
+
+      setState(() {
+        this.teachers = response;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading teachers: $e");
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _addTeacher(String surname, String name, String fatherName) async {
+    try {
+      setState(() {
+        error = null;
+      });
+
+      await TeacherService.addTeacher(surname, name, fatherName);
+
+      _loadTeachers();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Учителя успішно додано')),
+      );
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _editTeacher(String id, String surname, String name, String fatherName) async {
+    try {
+      setState(() {
+        error = null;
+        isLoading = true;
+      });
+
+      await TeacherService.updateTeacher(id, surname, name, fatherName);
+      await _loadTeachers();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Дані вчителя успішно оновлено')),
+      );
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Помилка оновлення даних: ${e.toString()}')),
+      );
+    }
   }
 
   Widget buildTextField({
@@ -127,9 +191,9 @@ class _TeacherListState extends State<TeacherList>{
   }
 
   void _showEditTeacherDialog(int index) {
-    TextEditingController surnameController = TextEditingController(text: teachers[index].split(' ')[0]);
-    TextEditingController nameController = TextEditingController(text: teachers[index].split(' ')[1]);
-    TextEditingController fatherNameController = TextEditingController(text: teachers[index].split(' ')[2]);
+    TextEditingController surnameController = TextEditingController(text: teachers[index].surname);
+    TextEditingController nameController = TextEditingController(text: teachers[index].name);
+    TextEditingController fatherNameController = TextEditingController(text: teachers[index].fatherName);
 
     showDialog(
       context: context,
@@ -177,7 +241,7 @@ class _TeacherListState extends State<TeacherList>{
             ElevatedButton(
               onPressed: () {
                 if (surnameController.text.isNotEmpty && nameController.text.isNotEmpty && fatherNameController.text.isNotEmpty) {
-                  _editTeacher(index, surnameController.text, nameController.text, fatherNameController.text);
+                  _editTeacher(teachers[index].id, surnameController.text, nameController.text, fatherNameController.text);
                   Navigator.pop(context);
                 }
               },
@@ -211,11 +275,20 @@ class _TeacherListState extends State<TeacherList>{
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  teachers.removeAt(index);
-                });
-                Navigator.pop(context);
+              onPressed: () async {
+                try {
+                  await TeacherService.deleteTeacher(teachers[index].id);
+                  await _loadTeachers();
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Вчителя успішно видалено')),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Помилка видалення: ${e.toString()}')),
+                  );
+                }
               },
               child: Text("Видалити"),
               style: ElevatedButton.styleFrom(
@@ -232,6 +305,11 @@ class _TeacherListState extends State<TeacherList>{
 
   @override
   Widget build(BuildContext context) {
+    // Додайте індикатор завантаження
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -247,12 +325,14 @@ class _TeacherListState extends State<TeacherList>{
             child: Column(
               children: [
                 Expanded(
-                  child: ListView.builder(
+                child: teachers.isEmpty
+                ? Center(child: Text('Немає вчителів'))
+                : ListView.builder(
                     itemCount: teachers.length,
                     itemBuilder: (context, index) {
                       return ListTile(
                         leading: Icon(Icons.person, color: AppColors.moonstone),
-                        title: Text(teachers[index]),
+                        title: Text("${teachers[index].surname} ${teachers[index].name} ${teachers[index].fatherName}"),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
