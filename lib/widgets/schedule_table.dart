@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:student_management_app/models/teacher_model.dart';
 import '../models/schedule_model.dart';
 import '../models/subject_model.dart';
 import '../styles/colors.dart';
@@ -96,7 +97,7 @@ class _ScheduleTableState extends State<ScheduleTable> {
                             dayOfWeek: dayIndex + 1,
                             lessonNumber: lessonNumber + 1,
                             time: '',
-                            subject: Subject(id: '', name: ''),
+                            subject: Subject(id: '', name: '', teacherId: "", hoursPerWeek: 0),
                           ),
                         );
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:student_management_app/widgets/student_info.dart';
+import 'package:student_management_app/widgets/student_subjects.dart';
 import '../styles/colors.dart';
 import '../styles/fonts.dart';
 import '../widgets/schedule_table.dart';
@@ -36,7 +37,9 @@ class StudentScreen extends StatelessWidget {
               children: [
                 StudentInfo(studentId: studentId),
                 SizedBox(height: 16),
-                ScheduleTable(studentId: ''),
+                StudentSubjects(studentId: studentId),
+                SizedBox(height: 16),
+                ScheduleTable(studentId: studentId),
               ],
             ),
           ),
