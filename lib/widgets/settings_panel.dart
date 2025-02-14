@@ -126,7 +126,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
+        children: [ 
           Stack(
             alignment: Alignment.center,
             children: [
@@ -141,21 +141,25 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   },
                 )
               else
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.check, color: Colors.green),
-                      onPressed: _saveSettings,
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.red),
-                      onPressed: () {
-                        setState(() {
-                          isEditing = false;
-                        });
-                      },
-                    ),
-                  ],
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.check, color: Colors.green),
+                        onPressed: _saveSettings,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            isEditing = false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 )
             ],
           ),

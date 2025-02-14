@@ -53,7 +53,7 @@ class _ScheduleTableState extends State<ScheduleTable> {
                 Text('Розклад занять', style: AppTextStyles.h2),
                 if (!isEditing)
                   IconButton(
-                    icon: Icon(Icons.edit, color: AppColors.moonstone),
+                    icon: Icon(Icons.edit, color: Colors.grey),
                     onPressed: () => setState(() => isEditing = true),
                   )
                 else

@@ -32,16 +32,11 @@ class StudentScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  height: 300,
-                  child: StudentInfo(),
-                ),
+                StudentInfo(studentId: studentId),
                 SizedBox(height: 16),
-                SizedBox(
-                  height: 500,
-                  child: ScheduleTable(studentId: ''),
-                ),
+                ScheduleTable(studentId: ''),
               ],
             ),
           ),

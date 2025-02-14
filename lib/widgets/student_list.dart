@@ -365,7 +365,7 @@ class _StudentListState extends State<StudentList> {
 
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    hintText: "Введіть клас",
+                    hintText: "Введіть слово для пошуку учнів",
                     hintStyle: AppTextStyles.h2.copyWith(color: Colors.grey),
                     prefixIcon: Icon(Icons.search, color: AppColors.carribbeanCurrent),
                     filled: true,
