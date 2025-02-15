@@ -156,10 +156,11 @@ class ScheduleTableState extends State<ScheduleTable> {
             onChanged: (String? newValue) => _updateSchedule(schedule, newValue),
           ),
         ),
-        IconButton(
-          icon: Icon(Icons.clear, color: Colors.red),
-          onPressed: () => _updateSchedule(schedule, null),
-        ),
+        if (schedule.subject.id.isNotEmpty)
+          IconButton(
+            icon: Icon(Icons.clear, color: Colors.red),
+            onPressed: () => _updateSchedule(schedule, null),
+          ),
       ],
     );
   }

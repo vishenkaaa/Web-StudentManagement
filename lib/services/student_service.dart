@@ -50,12 +50,13 @@ class StudentService {
     }
   }
 
-  static Future<Student> updateStudent(String id, String surname, String name,
+  static Future<Student> updateStudent(String id, String email, String surname, String name,
       String className, DateTime dateOfBirth) async {
     final response = await http.put(
       Uri.parse('$baseUrl/students/$id'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
+        'email': email,
         'surname': surname,
         'name': name,
         'studentClass': className,

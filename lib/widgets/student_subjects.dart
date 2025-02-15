@@ -62,38 +62,48 @@ class _StudentSubjectsState extends State<StudentSubjects> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Додати предмет"),
+          title: Text("Додати предмет", style: AppTextStyles.h2),
           backgroundColor: AppColors.white,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: "Назва предмета"),
-              ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: "Вчитель"),
-                value: selectedTeacherId,
-                items: teachers.entries.map((entry) {
-                  final teacher = entry.value;
-                  return DropdownMenuItem(
-                    value: teacher.id,
-                    child: Text("${teacher.surname} ${teacher.name} ${teacher.fatherName}"),
-                  );
-                }).toList(),
-                onChanged: (value) => selectedTeacherId = value,
-              ),
-              TextField(
-                controller: hoursController,
-                decoration: InputDecoration(labelText: "Годин на тиждень"),
-                keyboardType: TextInputType.number,
-              ),
-            ],
+          content: Container(
+            width: MediaQuery.of(context).size.width * 0.4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildTextField(
+                  controller: nameController,
+                  label: "Назва предмета",
+                  hint: "Введіть назву предмета",
+                  icon: Icons.book,
+                ),
+                SizedBox(height: 12),
+                buildDropdown(
+                  label: "Вчитель",
+                  value: selectedTeacherId,
+                  items: teachers.entries.map((entry) {
+                    final teacher = entry.value;
+                    return DropdownMenuItem(
+                      value: teacher.id,
+                      child: Text("${teacher.surname} ${teacher.name} ${teacher.fatherName}"),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => selectedTeacherId = value),
+                ),
+                SizedBox(height: 12),
+                buildTextField(
+                  controller: hoursController,
+                  label: "Годин на тиждень",
+                  hint: "Введіть кількість годин",
+                  icon: Icons.access_time,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text("Скасувати"),
+              style: TextButton.styleFrom(
+                  foregroundColor: Colors.redAccent, textStyle: AppTextStyles.h3),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -111,6 +121,10 @@ class _StudentSubjectsState extends State<StudentSubjects> {
                 }
               },
               child: Text("Додати"),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.moonstone,
+                  foregroundColor: Colors.white,
+                  textStyle: AppTextStyles.h3),
             ),
           ],
         );
@@ -127,40 +141,51 @@ class _StudentSubjectsState extends State<StudentSubjects> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Редагувати предмет"),
+          title: Text("Редагувати предмет", style: AppTextStyles.h1),
           backgroundColor: AppColors.white,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: "Назва предмета"),
-              ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: "Вчитель"),
-                value: selectedTeacherId,
-                items: teachers.entries.map((entry) {
-                  final teacher = entry.value;
-                  return DropdownMenuItem(
-                    value: teacher.id,
-                    child: Text("${teacher.surname} ${teacher.name} ${teacher.fatherName}"),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) selectedTeacherId = value;
-                },
-              ),
-              TextField(
-                controller: hoursController,
-                decoration: InputDecoration(labelText: "Годин на тиждень"),
-                keyboardType: TextInputType.number,
-              ),
-            ],
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildTextField(
+                  controller: nameController,
+                  label: "Назва предмета",
+                  hint: "Введіть назву предмета",
+                  icon: Icons.book,
+                ),
+                SizedBox(height: 12),
+                buildDropdown(
+                  label: "Вчитель",
+                  value: selectedTeacherId,
+                  items: teachers.entries.map((entry) {
+                    final teacher = entry.value;
+                    return DropdownMenuItem(
+                      value: teacher.id,
+                      child: Text("${teacher.surname} ${teacher.name} ${teacher.fatherName}"),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => selectedTeacherId = value);
+                  },
+                ),
+                SizedBox(height: 12),
+                buildTextField(
+                  controller: hoursController,
+                  label: "Годин на тиждень",
+                  hint: "Введіть кількість годин",
+                  icon: Icons.access_time,
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text("Скасувати"),
+              style: TextButton.styleFrom(
+                  foregroundColor: Colors.redAccent, textStyle: AppTextStyles.h3),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -178,10 +203,81 @@ class _StudentSubjectsState extends State<StudentSubjects> {
                 }
               },
               child: Text("Зберегти"),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.moonstone,
+                  foregroundColor: Colors.white,
+                  textStyle: AppTextStyles.h3),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget buildDropdown({
+    required String label,
+    required String? value,
+    required List<DropdownMenuItem<String>> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: AppTextStyles.h2.copyWith(color: Colors.grey[700]),
+        hintStyle: AppTextStyles.h2.copyWith(color: Colors.grey[500]),
+        prefixIcon: Icon(Icons.person, color: AppColors.carribbeanCurrent),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.carribbeanCurrent, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.moonstone, width: 2),
+        ),
+      ),
+      value: value,
+      items: items,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    IconData? icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: AppTextStyles.h2.copyWith(color: Colors.grey[700]),
+        hintText: hint,
+        hintStyle: AppTextStyles.h2.copyWith(color: Colors.grey[500]),
+        prefixIcon: icon != null ? Icon(icon, color: AppColors.carribbeanCurrent) : null,
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.carribbeanCurrent, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.moonstone, width: 2),
+        ),
+      ),
     );
   }
 
@@ -240,9 +336,9 @@ class _StudentSubjectsState extends State<StudentSubjects> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Предмети", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text("Предмети", style: AppTextStyles.h2),
                 IconButton(
-                  icon: Icon(Icons.add, color: AppColors.moonstone),
+                  icon: Icon(size: 27, Icons.add, color: AppColors.moonstone),
                   onPressed: _showAddSubjectDialog,
                 ),
               ],

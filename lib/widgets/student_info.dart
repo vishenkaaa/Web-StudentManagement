@@ -20,10 +20,24 @@ class _StudentInfoState extends State<StudentInfo> {
   Student? student;
   Student? tempStudent;
 
+  late TextEditingController surnameController;
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController classController;
+
   @override
   void initState() {
     super.initState();
     _loadStudentData();
+  }
+
+  @override
+  void dispose() {
+    surnameController.dispose();
+    nameController.dispose();
+    emailController.dispose();
+    classController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadStudentData() async {
@@ -39,6 +53,12 @@ class _StudentInfoState extends State<StudentInfo> {
       setState(() {
         student = response;
         tempStudent = student?.copyWith();
+
+        surnameController = TextEditingController(text: tempStudent?.surname ?? "");
+        nameController = TextEditingController(text: tempStudent?.name ?? "");
+        emailController = TextEditingController(text: tempStudent?.email ?? "");
+        classController = TextEditingController(text: tempStudent?.className ?? "");
+
         isLoading = false;
       });
     } catch (e) {
@@ -74,6 +94,7 @@ class _StudentInfoState extends State<StudentInfo> {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Учня успішно видалено'))
                   );
+                  Navigator.pop(context, true);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Помилка видалення: ${e.toString()}'))
@@ -93,7 +114,7 @@ class _StudentInfoState extends State<StudentInfo> {
     );
   }
 
-  Widget _buildInfoRow(String label, String? value, Function(String) onChanged) {
+  Widget _buildInfoRow(String label, TextEditingController controller, Function(String) onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -107,11 +128,11 @@ class _StudentInfoState extends State<StudentInfo> {
           Expanded(
             child: isEditing
                 ? TextField(
-              controller: TextEditingController(text: value),
+              controller: controller,
               onChanged: onChanged,
             )
                 : Text(
-              value ?? "Немає даних",
+              controller.text.isNotEmpty ? controller.text : "Немає даних",
               style: AppTextStyles.h3,
             ),
           ),
@@ -146,7 +167,6 @@ class _StudentInfoState extends State<StudentInfo> {
                         colorScheme: ColorScheme.light(
                           primary: AppColors.carribbeanCurrent,
                           onPrimary: Colors.white,
-                          surface: AppColors.lightBlue,
                         ),
                         timePickerTheme: TimePickerThemeData(
                           backgroundColor: AppColors.white,
@@ -195,7 +215,7 @@ class _StudentInfoState extends State<StudentInfo> {
       });
 
       await StudentService.updateStudent(
-        tempStudent!.id, tempStudent!.surname, tempStudent!.name, tempStudent!.className, tempStudent!.dateOfBirth
+        tempStudent!.id, tempStudent!.email, tempStudent!.surname, tempStudent!.name, tempStudent!.className, tempStudent!.dateOfBirth
       );
 
       setState(() {
@@ -256,7 +276,7 @@ class _StudentInfoState extends State<StudentInfo> {
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(size: 18, Icons.edit, color: Colors.grey),
+                          icon: Icon( Icons.edit, color: Colors.grey),
                           onPressed: () {
                             setState(() {
                               isEditing = true;
@@ -293,20 +313,20 @@ class _StudentInfoState extends State<StudentInfo> {
           ],
         ),
         SizedBox(height: 10),
-        _buildInfoRow("Прізвище:", tempStudent?.surname ?? "", (val) {
-          setState(() => tempStudent = tempStudent?.copyWith(surname: val));
+        _buildInfoRow("Прізвище:", surnameController, (val) {
+          tempStudent = tempStudent?.copyWith(surname: val);
         }),
-        _buildInfoRow("Ім'я:", tempStudent?.name ?? "", (val) {
-          setState(() => tempStudent = tempStudent?.copyWith(name: val));
+        _buildInfoRow("Ім'я:", nameController, (val) {
+          tempStudent = tempStudent?.copyWith(name: val);
         }),
         _buildDateRow("Дата народження:", tempStudent?.dateOfBirth, (val) {
           setState(() => tempStudent = tempStudent?.copyWith(dateOfBirth: val));
         }),
-        _buildInfoRow("Email:", tempStudent?.email ?? "", (val) {
-          setState(() => tempStudent = tempStudent?.copyWith(email: val));
+        _buildInfoRow("Email:", emailController, (val) {
+          tempStudent = tempStudent?.copyWith(email: val);
         }),
-        _buildInfoRow("Клас:", tempStudent?.className ?? "", (val) {
-          setState(() => tempStudent = tempStudent?.copyWith(className: val));
+        _buildInfoRow("Клас:", classController, (val) {
+          tempStudent = tempStudent?.copyWith(className: val);
         }),
       ],
     );

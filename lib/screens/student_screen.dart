@@ -19,7 +19,7 @@ class StudentScreen extends StatelessWidget {
             style: AppTextStyles.h1.copyWith(color: AppColors.carribbeanCurrent)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: AppColors.carribbeanCurrent),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, true),
         ),
       ),
       backgroundColor: AppColors.lightBlue,

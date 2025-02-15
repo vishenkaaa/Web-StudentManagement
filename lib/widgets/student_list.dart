@@ -418,8 +418,8 @@ class _StudentListState extends State<StudentList> {
                           ),
                         ],
                       ),
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await  Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => StudentScreen(
@@ -427,6 +427,10 @@ class _StudentListState extends State<StudentList> {
                             ),
                           ),
                         );
+
+                        if (result == true) {
+                          _loadStudents();
+                        }
                       },
                     );
                   },
