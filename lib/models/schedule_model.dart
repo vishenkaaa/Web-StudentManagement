@@ -1,27 +1,28 @@
 import 'package:student_management_app/models/subject_model.dart';
 
 class Schedule {
-  //final String id;
+  final String id;
   final int dayOfWeek;
   final int lessonNumber;
-  final String time;
-  final Subject subject;
+  late final Subject subject;
 
   Schedule({
-    //required this.id,
+    required this.id,
     required this.dayOfWeek,
     required this.lessonNumber,
-    required this.time,
     required this.subject,
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     return Schedule(
-      //id: json['_id'],
-      dayOfWeek: json['dayOfWeek'],
-      lessonNumber: json['lessonNumber'],
-      time: json['time'],
-      subject: Subject.fromJson(json['subject']),
+      id: json['_id'] ?? '',
+      dayOfWeek: json['dayOfWeek'] ?? 0,
+      lessonNumber: json['lessonNumber'] ?? 0,
+      subject: json['subject'] != null
+          ? Subject.fromJson(json['subject'])
+          : Subject(id: '', name: 'Невідомий предмет', teacherId: '', hoursPerWeek: 0),
     );
   }
+
+
 }

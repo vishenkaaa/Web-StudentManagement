@@ -5,10 +5,14 @@ import 'package:student_management_app/services/subject_service.dart';
 import 'package:student_management_app/services/teacher_service.dart';
 import 'package:student_management_app/styles/colors.dart';
 
+import '../styles/fonts.dart';
+
 class StudentSubjects extends StatefulWidget {
   final String studentId;
 
-  const StudentSubjects({Key? key, required this.studentId}) : super(key: key);
+  final VoidCallback onSubjectsUpdated;
+
+  const StudentSubjects({Key? key, required this.studentId, required this.onSubjectsUpdated}) : super(key: key);
 
   @override
   _StudentSubjectsState createState() => _StudentSubjectsState();
@@ -19,6 +23,10 @@ class _StudentSubjectsState extends State<StudentSubjects> {
   Map<String, Teacher> teachers = {};
   bool isLoading = true;
   String? error;
+
+  void _onSubjectChanged() {
+    widget.onSubjectsUpdated();
+  }
 
   @override
   void initState() {
@@ -34,13 +42,80 @@ class _StudentSubjectsState extends State<StudentSubjects> {
 
       teachers = {for (var teacher in teacherList) teacher.id: teacher};
 
+      _onSubjectChanged();
       setState(() => isLoading = false);
+
     } catch (e) {
       setState(() {
         error = e.toString();
         isLoading = false;
       });
     }
+  }
+
+  void _showAddSubjectDialog() {
+    TextEditingController nameController = TextEditingController();
+    TextEditingController hoursController = TextEditingController();
+    String? selectedTeacherId;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Додати предмет"),
+          backgroundColor: AppColors.white,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: "Назва предмета"),
+              ),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: "Вчитель"),
+                value: selectedTeacherId,
+                items: teachers.entries.map((entry) {
+                  final teacher = entry.value;
+                  return DropdownMenuItem(
+                    value: teacher.id,
+                    child: Text("${teacher.surname} ${teacher.name} ${teacher.fatherName}"),
+                  );
+                }).toList(),
+                onChanged: (value) => selectedTeacherId = value,
+              ),
+              TextField(
+                controller: hoursController,
+                decoration: InputDecoration(labelText: "Годин на тиждень"),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Скасувати"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isNotEmpty &&
+                    selectedTeacherId != null &&
+                    hoursController.text.isNotEmpty) {
+                  await SubjectService.addSubject(
+                    widget.studentId,
+                    nameController.text,
+                    selectedTeacherId!,
+                    int.parse(hoursController.text),
+                  );
+                  _loadData();
+                  Navigator.pop(context);
+                }
+              },
+              child: Text("Додати"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showEditSubjectDialog(Subject subject) {
@@ -110,9 +185,48 @@ class _StudentSubjectsState extends State<StudentSubjects> {
     );
   }
 
-  Future<void> _deleteSubject(String subjectId) async {
-    await SubjectService.deleteSubject(subjectId, widget.studentId);
-    _loadData();
+  void _showDeleteStudentDialog(String subjectId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Ви впевнені, що хочете видалити цей предмет?"),
+          backgroundColor: AppColors.white,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Скасувати"),
+              style: TextButton.styleFrom(
+                  foregroundColor: Colors.lightBlueAccent,
+                  textStyle: AppTextStyles.h3
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  await SubjectService.deleteSubject(subjectId, widget.studentId);
+                  _loadData();
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Предмет успішно видалено'))
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Помилка видалення: ${e.toString()}'))
+                  );
+                }
+              },
+              child: Text("Видалити"),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  textStyle: AppTextStyles.h3
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -127,6 +241,10 @@ class _StudentSubjectsState extends State<StudentSubjects> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text("Предмети", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: Icon(Icons.add, color: AppColors.moonstone),
+                  onPressed: _showAddSubjectDialog,
+                ),
               ],
             ),
             isLoading
@@ -151,12 +269,12 @@ class _StudentSubjectsState extends State<StudentSubjects> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit, color: Colors.blue),
+                        icon: Icon(Icons.edit, color: Colors.grey),
                         onPressed: () => _showEditSubjectDialog(subject),
                       ),
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteSubject(subject.id),
+                        onPressed: () => _showDeleteStudentDialog(subject.id),
                       ),
                     ],
                   ),

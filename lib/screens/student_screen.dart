@@ -7,8 +7,8 @@ import '../widgets/schedule_table.dart';
 
 class StudentScreen extends StatelessWidget {
   final String studentId;
-
-  const StudentScreen({Key? key, required this.studentId}) : super(key: key);
+  final GlobalKey<ScheduleTableState> _scheduleKey = GlobalKey();
+  StudentScreen({Key? key, required this.studentId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +37,14 @@ class StudentScreen extends StatelessWidget {
               children: [
                 StudentInfo(studentId: studentId),
                 SizedBox(height: 16),
-                StudentSubjects(studentId: studentId),
+                StudentSubjects(
+                  studentId: studentId,
+                  onSubjectsUpdated: () {
+                    _scheduleKey.currentState?.refreshSchedule();
+                  },
+                ),
                 SizedBox(height: 16),
-                ScheduleTable(studentId: studentId),
+                ScheduleTable(key: _scheduleKey, studentId: studentId),
               ],
             ),
           ),
