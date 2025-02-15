@@ -50,7 +50,7 @@ class ScheduleTableState extends State<ScheduleTable> {
   }
 
   void refreshSchedule() {
-    _loadData(); // Викликаємо оновлення
+    _loadData();
   }
 
   Future<void> _updateSchedule(Schedule schedule, String? newSubjectId) async {
@@ -89,7 +89,7 @@ class ScheduleTableState extends State<ScheduleTable> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildHeader(),
             SizedBox(height: 16),
@@ -104,7 +104,7 @@ class ScheduleTableState extends State<ScheduleTable> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Розклад занять', style: AppTextStyles.h2),
+        Text('Розклад занять', style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.bold)),
         IconButton(
           icon: Icon(isEditing ? Icons.check : Icons.edit, color: isEditing ? Colors.green : Colors.grey),
           onPressed: () => setState(() => isEditing = !isEditing),
@@ -129,7 +129,9 @@ class ScheduleTableState extends State<ScheduleTable> {
               ...List.generate(6, (dayIndex) {
                 final schedule = schedules.firstWhere(
                       (s) => s.dayOfWeek == dayIndex + 1 && s.lessonNumber == lessonNumber + 1,
-                  orElse: () => Schedule(id: '', dayOfWeek: dayIndex + 1, lessonNumber: lessonNumber + 1, subject: Subject(id: '', name: '—', teacherId: "", hoursPerWeek: 0)),
+                  orElse: () => Schedule(id: '', dayOfWeek: dayIndex + 1,
+                      lessonNumber: lessonNumber + 1,
+                      subject: Subject(id: '', name: '—', teacherId: "", hoursPerWeek: 0)),
                 );
 
                 return DataCell(

@@ -62,7 +62,7 @@ class _StudentSubjectsState extends State<StudentSubjects> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Додати предмет", style: AppTextStyles.h2),
+          title: Text("Додати предмет", style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.bold)),
           backgroundColor: AppColors.white,
           content: Container(
             width: MediaQuery.of(context).size.width * 0.4,
@@ -141,7 +141,7 @@ class _StudentSubjectsState extends State<StudentSubjects> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Редагувати предмет", style: AppTextStyles.h1),
+          title: Text("Редагувати предмет", style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.bold)),
           backgroundColor: AppColors.white,
           content: SizedBox(
             width: MediaQuery.of(context).size.width * 0.4,
@@ -336,7 +336,7 @@ class _StudentSubjectsState extends State<StudentSubjects> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Предмети", style: AppTextStyles.h2),
+                Text("Предмети", style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.bold)),
                 IconButton(
                   icon: Icon(size: 27, Icons.add, color: AppColors.moonstone),
                   onPressed: _showAddSubjectDialog,

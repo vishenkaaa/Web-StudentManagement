@@ -48,7 +48,6 @@ class _StudentInfoState extends State<StudentInfo> {
       });
 
       final response = await StudentService.getStudentById(widget.studentId);
-      print("Student response: $response");
 
       setState(() {
         student = response;
@@ -62,7 +61,6 @@ class _StudentInfoState extends State<StudentInfo> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error loading student: $e");
       setState(() {
         error = e.toString();
         isLoading = false;
@@ -214,6 +212,13 @@ class _StudentInfoState extends State<StudentInfo> {
         error = null;
       });
 
+      if (!_isValidEmail(emailController.text)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Невірний формат email"))
+        );
+        return;
+      }
+
       await StudentService.updateStudent(
         tempStudent!.id, tempStudent!.email, tempStudent!.surname, tempStudent!.name, tempStudent!.className, tempStudent!.dateOfBirth
       );
@@ -240,6 +245,13 @@ class _StudentInfoState extends State<StudentInfo> {
     }
   }
 
+  bool _isValidEmail(String email) {
+    final RegExp emailRegex = RegExp(
+        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    );
+    return emailRegex.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -255,6 +267,7 @@ class _StudentInfoState extends State<StudentInfo> {
     }
 
     return Column(
+
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Stack(

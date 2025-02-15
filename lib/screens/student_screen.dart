@@ -4,10 +4,12 @@ import 'package:student_management_app/widgets/student_subjects.dart';
 import '../styles/colors.dart';
 import '../styles/fonts.dart';
 import '../widgets/schedule_table.dart';
+import '../widgets/student_grades.dart';
 
 class StudentScreen extends StatelessWidget {
   final String studentId;
   final GlobalKey<ScheduleTableState> _scheduleKey = GlobalKey();
+  final GlobalKey<StudentGradesState> _scheduleKeyGrade = GlobalKey();
   StudentScreen({Key? key, required this.studentId}) : super(key: key);
 
   @override
@@ -41,10 +43,13 @@ class StudentScreen extends StatelessWidget {
                   studentId: studentId,
                   onSubjectsUpdated: () {
                     _scheduleKey.currentState?.refreshSchedule();
+                    _scheduleKeyGrade.currentState?.refreshGrades();
                   },
                 ),
                 SizedBox(height: 16),
                 ScheduleTable(key: _scheduleKey, studentId: studentId),
+                SizedBox(height: 16),
+                StudentGrades(key:_scheduleKeyGrade, studentId: studentId),
               ],
             ),
           ),

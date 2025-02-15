@@ -6,7 +6,7 @@ import '../models/subject_model.dart';
 class ScheduleService {
   static const String baseUrl = 'http://localhost:5000/schedule';
 
-  /// **Отримати розклад студента**
+  // Отримати розклад студента
   static Future<List<Schedule>> getSchedule(String studentId) async {
     final response = await http.get(Uri.parse('$baseUrl/student/$studentId'));
 
@@ -18,7 +18,7 @@ class ScheduleService {
     }
   }
 
-  /// **Додати заняття до розкладу**
+  //Додати заняття до розкладу
   static Future<void> addSchedule({
     required String studentId,
     required int dayOfWeek,
@@ -41,7 +41,7 @@ class ScheduleService {
     }
   }
 
-  /// **Оновити заняття**
+  //Оновити заняття
   static Future<void> updateSchedule({
     required String scheduleId,
     required int dayOfWeek,
@@ -63,7 +63,7 @@ class ScheduleService {
     }
   }
 
-  /// **Видалити заняття з розкладу**
+  //Видалити заняття з розкладу
   static Future<void> deleteSchedule(String scheduleId, String studentId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/$scheduleId?studentId=$studentId'),
